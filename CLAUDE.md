@@ -8,6 +8,8 @@ AI-powered voice customer service system for a Philippine pharmaceutical company
 
 **Phase 0: Proof of Concept (POC)** - Validating Retell AI works with Taglish accents before full build.
 
+**Live Deployment:** https://api-production-c04f.up.railway.app
+
 ## Tech Stack
 
 - **Runtime:** Node.js 18+
@@ -29,13 +31,23 @@ project-lapu-lapu/
 │   ├── api/                    # Express backend (current focus)
 │   │   ├── src/
 │   │   │   ├── index.ts        # Server entry point
-│   │   │   ├── webhooks/       # Retell/Telnyx webhook handlers
-│   │   │   ├── routes/         # API routes (Phase 1+)
-│   │   │   ├── services/       # Business logic (Phase 1+)
-│   │   │   ├── tools/          # Retell tool handlers (Phase 2+)
-│   │   │   └── db/             # Database queries/migrations (Phase 1+)
+│   │   │   ├── webhooks/
+│   │   │   │   └── retell.ts   # Retell webhook + tool handlers
+│   │   │   ├── routes/
+│   │   │   │   └── web-call.ts # Web call session creation
+│   │   │   └── services/
+│   │   │       └── products.ts # Product catalog search
+│   │   ├── data/
+│   │   │   ├── products.csv    # 28 CyberMeds products
+│   │   │   └── retell-agent-prompt.md  # Agent system prompt
+│   │   ├── public/
+│   │   │   └── test-call.html  # Web call test page
+│   │   ├── Dockerfile          # Railway deployment
+│   │   ├── railway.json        # Railway config
 │   │   └── package.json
 │   └── dashboard/              # Next.js frontend (Phase 4+)
+├── docs/
+│   └── RETELL_SETUP.md         # Comprehensive Retell setup guide
 ├── packages/
 │   └── shared/                 # Shared types, constants (Phase 1+)
 ├── scripts/                    # DB migrations, seed data (Phase 1+)
@@ -65,6 +77,11 @@ pnpm --filter api typecheck
 
 - `apps/api/src/index.ts` - Express server entry, health check, middleware
 - `apps/api/src/webhooks/retell.ts` - Retell webhook handler (call events, tool calls)
+- `apps/api/src/services/products.ts` - Product catalog search and formatting
+- `apps/api/src/routes/web-call.ts` - Web call session creation API
+- `apps/api/data/products.csv` - 28 CyberMeds pharmaceutical products
+- `apps/api/data/retell-agent-prompt.md` - Maya agent system prompt
+- `docs/RETELL_SETUP.md` - Step-by-step Retell configuration guide
 - `.env` - Environment variables (not committed)
 - `.env.example` - Environment template
 
@@ -74,8 +91,12 @@ pnpm --filter api typecheck
 |----------|--------|---------|
 | `/health` | GET | Health check, returns status and version |
 | `/webhooks/retell` | POST | Receives Retell call lifecycle events |
-| `/webhooks/retell/logs` | GET | View recent call logs (debugging) |
 | `/webhooks/retell/tools` | POST | Retell tool function calls |
+| `/webhooks/retell/logs` | GET | View recent call logs (debugging) |
+| `/webhooks/retell/orders` | GET | View orders (debugging) |
+| `/webhooks/retell/complaints` | GET | View complaints (debugging) |
+| `/api/web-call/create` | POST | Create web call session |
+| `/test-call.html` | Static | Web-based call test page |
 
 ## Environment Variables
 
@@ -104,16 +125,25 @@ Future phases:
 - `call_ended` - Call completed, includes transcript
 - `call_analyzed` - Post-call analysis with summary/sentiment
 
-### Tool Functions (Phase 2)
-- `lookup_product` - Search product catalog
-- `create_order` - Place customer order
+### Tool Functions (Implemented)
+- `lookup_product` - Search product catalog by name, generic name, or condition
+- `create_order` - Place customer order with PWD/Senior discount support
 - `log_complaint` - Create complaint ticket
-- `get_customer_orders` - Order history lookup
-- `transfer_to_human` - Handoff to human agent
+- `transfer_to_human` - Handoff to pharmacist, customer service, or manager
+
+### Product Catalog
+- 28 CyberMeds pharmaceutical products loaded from CSV
+- Categories: Neuroprotective, Antihypertensive, Anti-inflammatory, Neuropathic Pain, Antipsychotic, Antidepressant, Antiplatelet, Food Supplements
+- Supports PWD/Senior Citizen 20% discount pricing
 
 ## Phase Roadmap
 
 - [x] Phase 0: POC - Validate Taglish voice handling
+  - [x] Railway deployment live
+  - [x] Product catalog loaded (28 products)
+  - [x] Custom functions implemented
+  - [x] Web call testing interface
+  - [ ] Conduct test calls with Taglish speakers
 - [ ] Phase 1: Core Infrastructure - PostgreSQL, Drizzle, API structure
 - [ ] Phase 2: Voice System - Full Retell tools, Telnyx routing
 - [ ] Phase 3: Notifications - SMS/Email confirmations
@@ -123,14 +153,19 @@ Future phases:
 ## Testing Notes
 
 For POC testing:
-1. Use ngrok to expose local server for Retell webhooks
-2. Test with English, Taglish, and various PH accents
-3. Check `/webhooks/retell/logs` for transcription accuracy
-4. Target: >90% English accuracy, >80% Taglish accuracy
+1. Use web test interface: https://api-production-c04f.up.railway.app/test-call.html
+2. Or use ngrok for local development: `ngrok http 3000`
+3. Test with English, Taglish, and various PH accents
+4. Check `/webhooks/retell/logs` for transcription accuracy
+5. Target: >90% English accuracy, >80% Taglish accuracy
 
 ## Deployment
 
-Target platform: Railway (API + PostgreSQL)
+**Live:** https://api-production-c04f.up.railway.app
+
+Deployed on Railway with Dockerfile. Key files:
+- `apps/api/Dockerfile` - Node.js 18 Alpine build
+- `apps/api/railway.json` - Railway config-as-code
 
 For local webhook testing:
 ```bash

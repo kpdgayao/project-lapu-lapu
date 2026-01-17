@@ -32,16 +32,31 @@ project-lapu-lapu/
 └── package.json                # Workspace root
 ```
 
-## Current Phase: POC (Phase 0)
+## Current Phase: POC (Phase 0) - LIVE
 
 **Goal:** Validate Retell AI works with Taglish accents before full build.
 
+**Live Deployment:** https://api-production-c04f.up.railway.app
+
 ### POC Endpoints
 
-- `GET /health` - Health check
-- `POST /webhooks/retell` - Retell call events
-- `GET /webhooks/retell/logs` - View recent call logs (debugging)
-- `POST /webhooks/retell/tools` - Retell tool calls (stub responses)
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/health` | GET | Health check |
+| `/webhooks/retell` | POST | Retell call lifecycle events |
+| `/webhooks/retell/tools` | POST | Retell tool function calls |
+| `/webhooks/retell/logs` | GET | View recent call logs |
+| `/webhooks/retell/orders` | GET | View orders (debugging) |
+| `/webhooks/retell/complaints` | GET | View complaints (debugging) |
+| `/api/web-call/create` | POST | Create web call session |
+| `/test-call.html` | GET | Web-based call test page |
+
+### Implemented Custom Functions
+
+- `lookup_product` - Search product catalog by name or condition
+- `create_order` - Create order with PWD/Senior discount support
+- `log_complaint` - Record customer complaints
+- `transfer_to_human` - Transfer to pharmacist/customer service/manager
 
 ## Getting Started
 
@@ -85,23 +100,17 @@ ngrok http 3000
 
 ### 1. Retell AI Setup
 
+See **[docs/RETELL_SETUP.md](docs/RETELL_SETUP.md)** for comprehensive setup instructions including:
+- Account creation and API key setup
+- Knowledge base creation with product catalog
+- Agent configuration with custom functions
+- Webhook configuration
+
+Quick start:
 1. Create account at [retellai.com](https://retellai.com/)
 2. Go to Dashboard > API Keys > Create new key
 3. Add to `.env` as `RETELL_API_KEY`
-4. Create new Agent with this prompt:
-
-```
-You are a friendly customer service agent for a pharmaceutical company
-in the Philippines. Greet the caller warmly and ask how you can help.
-
-You can understand English and Taglish (Filipino-English mix).
-Be patient and speak clearly.
-
-For now, just have a natural conversation. If they ask about products
-or orders, let them know this is a test call and a human will follow up.
-```
-
-5. Configure webhook URL: `https://your-domain.com/webhooks/retell`
+4. Follow the full setup guide in `docs/RETELL_SETUP.md`
 
 ### 2. Telnyx Setup
 
@@ -188,6 +197,11 @@ pnpm --filter api typecheck
 ## Phase Roadmap
 
 - [x] **Phase 0**: POC - Validate Taglish voice handling
+  - [x] Railway deployment live
+  - [x] Product catalog (28 CyberMeds products)
+  - [x] Custom functions (lookup, order, complaint, transfer)
+  - [x] Web call testing interface
+  - [ ] Conduct test calls with Taglish speakers
 - [ ] **Phase 1**: Core Infrastructure - DB, migrations, API structure
 - [ ] **Phase 2**: Voice System - Full Retell integration with tools
 - [ ] **Phase 3**: Notifications - SMS/Email confirmations
