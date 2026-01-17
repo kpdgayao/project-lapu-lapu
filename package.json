@@ -4,9 +4,9 @@
   "private": true,
   "description": "AI-powered voice customer service system for Philippine pharmaceutical company",
   "scripts": {
-    "dev": "cd apps/api && npm run dev",
-    "build": "cd apps/api && npm run build",
-    "start": "node apps/api/dist/index.js"
+    "dev": "npm run dev --prefix apps/api",
+    "build": "npm run build --prefix apps/api",
+    "start": "npm run start --prefix apps/api"
   },
   "engines": {
     "node": ">=18.0.0"
