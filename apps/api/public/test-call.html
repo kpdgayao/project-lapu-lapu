@@ -76,6 +76,35 @@
       margin-bottom: 1rem;
     }
 
+    .disclaimer {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 8px;
+      padding: 0.875rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.8rem;
+      color: #856404;
+    }
+
+    .disclaimer-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .rate-limit-info {
+      background: #e8f4fd;
+      border: 1px solid #bee5eb;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.75rem;
+      color: #0c5460;
+      margin-top: 0.75rem;
+      text-align: center;
+    }
+
     .card {
       background: var(--white);
       border-radius: 12px;
@@ -288,6 +317,20 @@
       <span class="demo-badge">AI Voice Assistant Demo</span>
     </div>
 
+    <div class="disclaimer">
+      <div class="disclaimer-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        Proof of Concept - Testing Mode
+      </div>
+      This is a demonstration prototype. Voice recognition accuracy and responses are being evaluated.
+      Not for production use. Calls are limited during testing.
+      <div class="rate-limit-info" id="rateLimitInfo">Loading usage info...</div>
+    </div>
+
     <div class="card">
       <div class="card-header">Voice Agent</div>
       <select id="agentSelect">
@@ -356,9 +399,20 @@
     const endBtn = document.getElementById('endCall');
     const statusDiv = document.getElementById('status');
     const transcriptDiv = document.getElementById('transcript');
+    const rateLimitInfo = document.getElementById('rateLimitInfo');
 
     let retellWebClient = null;
     let isCallActive = false;
+
+    async function loadRateLimitStatus() {
+      try {
+        const response = await fetch('/api/web-call/status');
+        const data = await response.json();
+        rateLimitInfo.textContent = `${data.dailyCallsRemaining} of ${data.dailyCallsLimit} demo calls remaining today`;
+      } catch (error) {
+        rateLimitInfo.textContent = 'Limited demo calls available';
+      }
+    }
 
     async function loadAgents() {
       try {
@@ -440,6 +494,7 @@
           startBtn.disabled = false;
           endBtn.style.display = 'none';
           isCallActive = false;
+          loadRateLimitStatus(); // Refresh remaining calls
         });
 
         retellWebClient.on('update', (update) => {
@@ -480,7 +535,9 @@
     startBtn.addEventListener('click', startCall);
     endBtn.addEventListener('click', endCall);
 
+    // Load initial data
     loadAgents();
+    loadRateLimitStatus();
   </script>
 </body>
 </html>
