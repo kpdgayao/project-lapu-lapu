@@ -41,7 +41,8 @@ project-lapu-lapu/
 │   │   │   ├── products.csv    # 28 CyberMeds products
 │   │   │   └── retell-agent-prompt.md  # Agent system prompt
 │   │   ├── public/
-│   │   │   └── test-call.html  # Web call test page
+│   │   │   ├── test-call.html  # Web call test page
+│   │   │   └── cybermeds-logo.png  # Cybermeds branding
 │   │   ├── Dockerfile          # Railway deployment
 │   │   ├── railway.json        # Railway config
 │   │   └── package.json
@@ -95,8 +96,19 @@ pnpm --filter api typecheck
 | `/webhooks/retell/logs` | GET | View recent call logs (debugging) |
 | `/webhooks/retell/orders` | GET | View orders (debugging) |
 | `/webhooks/retell/complaints` | GET | View complaints (debugging) |
-| `/api/web-call/create` | POST | Create web call session |
+| `/api/web-call` | POST | Create web call session (rate limited) |
+| `/api/web-call/agents` | GET | List available Retell agents |
+| `/api/web-call/status` | GET | Check rate limit status |
 | `/test-call.html` | Static | Web-based call test page |
+
+## Rate Limiting (POC)
+
+To conserve Retell credits during testing:
+- **10 calls per day** (global limit across all users)
+- **5 calls per IP per hour**
+- **5 minute max call duration** (auto-terminates)
+
+Check remaining calls: `GET /api/web-call/status`
 
 ## Environment Variables
 
