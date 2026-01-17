@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lapu-lapu Voice Test</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #333;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    button {
+      width: 100%;
+      padding: 1rem;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    #startCall {
+      background: #4CAF50;
+      color: white;
+    }
+    #startCall:hover:not(:disabled) {
+      background: #45a049;
+    }
+    #startCall:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    #endCall {
+      background: #f44336;
+      color: white;
+      display: none;
+    }
+    #endCall:hover {
+      background: #da190b;
+    }
+    .status {
+      text-align: center;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+    .status.idle { background: #e0e0e0; color: #666; }
+    .status.connecting { background: #fff3cd; color: #856404; }
+    .status.active { background: #d4edda; color: #155724; }
+    .status.error { background: #f8d7da; color: #721c24; }
+
+    #transcript {
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      padding: 1rem;
+      min-height: 150px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .agent-msg {
+      color: #1976d2;
+      margin-bottom: 0.5rem;
+    }
+    .user-msg {
+      color: #388e3c;
+      margin-bottom: 0.5rem;
+    }
+    .info {
+      background: #e3f2fd;
+      padding: 1rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: #1565c0;
+    }
+    .test-phrases {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #fff8e1;
+      border-radius: 4px;
+    }
+    .test-phrases h4 {
+      margin: 0 0 0.5rem 0;
+      color: #f57c00;
+    }
+    .test-phrases ul {
+      margin: 0;
+      padding-left: 1.5rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>Lapu-lapu Voice Test</h1>
+  <p class="subtitle">POC - Testing Taglish accent recognition</p>
+
+  <div class="card">
+    <label for="agentSelect">Select Agent</label>
+    <select id="agentSelect">
+      <option value="">Loading agents...</option>
+    </select>
+
+    <div class="info">
+      No agents? Create one at <a href="https://dashboard.retellai.com" target="_blank">Retell Dashboard</a> first.
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="status" class="status idle">Ready to start</div>
+
+    <button id="startCall">Start Voice Test</button>
+    <button id="endCall">End Call</button>
+  </div>
+
+  <div class="card">
+    <label>Live Transcript</label>
+    <div id="transcript">
+      <em style="color: #999;">Transcript will appear here during the call...</em>
+    </div>
+  </div>
+
+  <div class="test-phrases">
+    <h4>Test Phrases (Taglish)</h4>
+    <ul>
+      <li>"Ano po yung available na gamot for cough?"</li>
+      <li>"May stock pa ba kayo ng Biogesic?"</li>
+      <li>"I want to order some vitamins, pwede po ba?"</li>
+      <li>"Magkano po ang delivery fee sa Makati?"</li>
+    </ul>
+  </div>
+
+  <!-- Retell Web SDK from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/retell-client-js-sdk@3/dist/index.umd.min.js"></script>
+
+  <script>
+    const agentSelect = document.getElementById('agentSelect');
+    const startBtn = document.getElementById('startCall');
+    const endBtn = document.getElementById('endCall');
+    const statusDiv = document.getElementById('status');
+    const transcriptDiv = document.getElementById('transcript');
+
+    let retellWebClient = null;
+    let isCallActive = false;
+
+    // Load available agents
+    async function loadAgents() {
+      try {
+        const response = await fetch('/api/web-call/agents');
+        const data = await response.json();
+
+        if (data.success && data.agents.length > 0) {
+          agentSelect.innerHTML = data.agents.map(agent =>
+            `<option value="${agent.agent_id}">${agent.agent_name || agent.agent_id}</option>`
+          ).join('');
+        } else {
+          agentSelect.innerHTML = '<option value="">No agents found - create one in Retell Dashboard</option>';
+        }
+      } catch (error) {
+        console.error('Failed to load agents:', error);
+        agentSelect.innerHTML = '<option value="">Error loading agents</option>';
+      }
+    }
+
+    function setStatus(status, message) {
+      statusDiv.className = `status ${status}`;
+      statusDiv.textContent = message;
+    }
+
+    function addTranscript(role, text) {
+      const className = role === 'agent' ? 'agent-msg' : 'user-msg';
+      const prefix = role === 'agent' ? 'Agent: ' : 'You: ';
+
+      // Clear placeholder on first message
+      if (transcriptDiv.querySelector('em')) {
+        transcriptDiv.innerHTML = '';
+      }
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = className;
+      msgDiv.textContent = prefix + text;
+      transcriptDiv.appendChild(msgDiv);
+      transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
+    }
+
+    async function startCall() {
+      const agentId = agentSelect.value;
+      if (!agentId) {
+        alert('Please select an agent first');
+        return;
+      }
+
+      try {
+        setStatus('connecting', 'Connecting...');
+        startBtn.disabled = true;
+        transcriptDiv.innerHTML = '<em style="color: #999;">Connecting to voice agent...</em>';
+
+        // Get access token from our backend
+        const response = await fetch('/api/web-call', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agent_id: agentId })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to create call');
+        }
+
+        // Initialize Retell Web Client
+        retellWebClient = new RetellWebClient();
+
+        // Set up event handlers
+        retellWebClient.on('call_started', () => {
+          console.log('Call started');
+          setStatus('active', 'Call active - speak now!');
+          startBtn.style.display = 'none';
+          endBtn.style.display = 'block';
+          isCallActive = true;
+          transcriptDiv.innerHTML = '';
+        });
+
+        retellWebClient.on('call_ended', () => {
+          console.log('Call ended');
+          setStatus('idle', 'Call ended');
+          startBtn.style.display = 'block';
+          startBtn.disabled = false;
+          endBtn.style.display = 'none';
+          isCallActive = false;
+        });
+
+        retellWebClient.on('agent_start_talking', () => {
+          console.log('Agent speaking...');
+        });
+
+        retellWebClient.on('agent_stop_talking', () => {
+          console.log('Agent stopped speaking');
+        });
+
+        retellWebClient.on('update', (update) => {
+          // Display transcript updates
+          if (update.transcript) {
+            transcriptDiv.innerHTML = '';
+            update.transcript.forEach(entry => {
+              addTranscript(entry.role, entry.content);
+            });
+          }
+        });
+
+        retellWebClient.on('error', (error) => {
+          console.error('Retell error:', error);
+          setStatus('error', `Error: ${error.message || 'Unknown error'}`);
+          startBtn.style.display = 'block';
+          startBtn.disabled = false;
+          endBtn.style.display = 'none';
+          isCallActive = false;
+        });
+
+        // Start the call with the access token
+        await retellWebClient.startCall({
+          accessToken: data.access_token
+        });
+
+      } catch (error) {
+        console.error('Failed to start call:', error);
+        setStatus('error', `Failed: ${error.message}`);
+        startBtn.disabled = false;
+      }
+    }
+
+    function endCall() {
+      if (retellWebClient && isCallActive) {
+        retellWebClient.stopCall();
+      }
+    }
+
+    // Event listeners
+    startBtn.addEventListener('click', startCall);
+    endBtn.addEventListener('click', endCall);
+
+    // Load agents on page load
+    loadAgents();
+  </script>
+</body>
+</html>
