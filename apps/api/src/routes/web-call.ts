@@ -9,8 +9,10 @@ export const webCallRouter = Router();
 // =============================================================================
 const RATE_LIMIT = {
   perIpPerHour: 5,        // Max calls per IP per hour
-  globalPerDay: 50,       // Max total calls per day across all users
+  globalPerDay: 10,       // Max total calls per day across all users
 };
+
+const MAX_CALL_DURATION_MS = 5 * 60 * 1000; // 5 minutes
 
 // Global daily counter (resets on server restart or daily)
 let globalDailyCallCount = 0;
@@ -103,6 +105,12 @@ webCallRouter.post('/', perIpLimiter, async (req: Request, res: Response) => {
       metadata: {
         source: 'poc-test',
         timestamp: new Date().toISOString()
+      },
+      // Auto-end call after 5 minutes to conserve credits
+      agent_override: {
+        agent: {
+          max_call_duration_ms: MAX_CALL_DURATION_MS
+        }
       }
     });
 
