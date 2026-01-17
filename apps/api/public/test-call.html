@@ -3,167 +3,348 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lapu-lapu Voice Test</title>
+  <title>Cybermeds AI Voice Assistant - Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
+
+    :root {
+      --primary: #970000;
+      --primary-dark: #7a0000;
+      --secondary: #444444;
+      --gray-light: #f8f8f8;
+      --gray-border: #e0e0e0;
+      --white: #ffffff;
+      --success: #28a745;
+      --warning: #ffc107;
+      --error: #dc3545;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 2rem;
-      background: #f5f5f5;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--gray-light);
+      min-height: 100vh;
+      color: var(--secondary);
     }
-    h1 {
-      color: #333;
-      margin-bottom: 0.5rem;
+
+    .header {
+      background: var(--white);
+      border-bottom: 3px solid var(--primary);
+      padding: 1rem 2rem;
+      text-align: center;
     }
-    .subtitle {
+
+    .logo {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+
+    .logo span {
+      color: var(--secondary);
+    }
+
+    .tagline {
+      font-size: 0.85rem;
       color: #666;
-      margin-bottom: 2rem;
+      margin-top: 0.25rem;
     }
-    .card {
-      background: white;
-      border-radius: 8px;
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
       padding: 1.5rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .demo-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: var(--white);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
       margin-bottom: 1rem;
     }
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-      color: #333;
+
+    .card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 1rem;
     }
-    input, select {
+
+    .card-header {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #888;
+      margin-bottom: 0.75rem;
+    }
+
+    select {
       width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 0.875rem 1rem;
+      border: 2px solid var(--gray-border);
+      border-radius: 8px;
       font-size: 1rem;
+      font-family: inherit;
+      color: var(--secondary);
+      background: var(--white);
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .status {
+      text-align: center;
+      padding: 1rem;
+      border-radius: 8px;
+      font-weight: 500;
       margin-bottom: 1rem;
     }
-    button {
+
+    .status.idle {
+      background: #f0f0f0;
+      color: #666;
+    }
+
+    .status.connecting {
+      background: #fff8e6;
+      color: #856404;
+    }
+
+    .status.active {
+      background: #e8f5e9;
+      color: #2e7d32;
+      animation: pulse 2s infinite;
+    }
+
+    .status.error {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .call-btn {
       width: 100%;
-      padding: 1rem;
-      font-size: 1.1rem;
+      padding: 1rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: inherit;
       border: none;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
+
     #startCall {
-      background: #4CAF50;
-      color: white;
+      background: var(--primary);
+      color: var(--white);
     }
+
     #startCall:hover:not(:disabled) {
-      background: #45a049;
+      background: var(--primary-dark);
+      transform: translateY(-1px);
     }
+
     #startCall:disabled {
       background: #ccc;
       cursor: not-allowed;
+      transform: none;
     }
+
     #endCall {
-      background: #f44336;
-      color: white;
+      background: var(--error);
+      color: var(--white);
       display: none;
     }
+
     #endCall:hover {
-      background: #da190b;
+      background: #b71c1c;
     }
-    .status {
-      text-align: center;
-      padding: 1rem;
-      border-radius: 4px;
-      margin-bottom: 1rem;
+
+    .icon {
+      width: 20px;
+      height: 20px;
     }
-    .status.idle { background: #e0e0e0; color: #666; }
-    .status.connecting { background: #fff3cd; color: #856404; }
-    .status.active { background: #d4edda; color: #155724; }
-    .status.error { background: #f8d7da; color: #721c24; }
 
     #transcript {
-      background: #fafafa;
-      border: 1px solid #eee;
-      border-radius: 4px;
+      background: var(--gray-light);
+      border: 1px solid var(--gray-border);
+      border-radius: 8px;
       padding: 1rem;
-      min-height: 150px;
-      max-height: 300px;
+      min-height: 120px;
+      max-height: 250px;
       overflow-y: auto;
       font-size: 0.9rem;
-      line-height: 1.6;
+      line-height: 1.7;
     }
+
+    .transcript-placeholder {
+      color: #999;
+      font-style: italic;
+      text-align: center;
+      padding: 2rem 0;
+    }
+
     .agent-msg {
-      color: #1976d2;
+      color: var(--primary);
       margin-bottom: 0.5rem;
+      padding-left: 0.5rem;
+      border-left: 2px solid var(--primary);
     }
+
     .user-msg {
-      color: #388e3c;
+      color: var(--secondary);
       margin-bottom: 0.5rem;
+      padding-left: 0.5rem;
+      border-left: 2px solid #888;
     }
-    .info {
-      background: #e3f2fd;
-      padding: 1rem;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      color: #1565c0;
-    }
+
     .test-phrases {
-      margin-top: 1rem;
-      padding: 1rem;
-      background: #fff8e1;
-      border-radius: 4px;
+      background: #fef9f9;
+      border: 1px solid #f5e0e0;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
     }
+
     .test-phrases h4 {
-      margin: 0 0 0.5rem 0;
-      color: #f57c00;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
+
     .test-phrases ul {
       margin: 0;
-      padding-left: 1.5rem;
+      padding-left: 1.25rem;
+      font-size: 0.85rem;
       color: #666;
+    }
+
+    .test-phrases li {
+      margin-bottom: 0.4rem;
+    }
+
+    .test-phrases li:last-child {
+      margin-bottom: 0;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.75rem;
+      color: #999;
+    }
+
+    .footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .mic-hint {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 0.75rem;
     }
   </style>
 </head>
 <body>
-  <h1>Lapu-lapu Voice Test</h1>
-  <p class="subtitle">POC - Testing Taglish accent recognition</p>
+  <header class="header">
+    <div class="logo">Cyber<span>meds</span></div>
+    <div class="tagline">24/7 Online Pharmacy</div>
+  </header>
 
-  <div class="card">
-    <label for="agentSelect">Select Agent</label>
-    <select id="agentSelect">
-      <option value="">Loading agents...</option>
-    </select>
+  <div class="container">
+    <div style="text-align: center;">
+      <span class="demo-badge">AI Voice Assistant Demo</span>
+    </div>
 
-    <div class="info">
-      No agents? Create one at <a href="https://dashboard.retellai.com" target="_blank">Retell Dashboard</a> first.
+    <div class="card">
+      <div class="card-header">Voice Agent</div>
+      <select id="agentSelect">
+        <option value="">Loading...</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <div id="status" class="status idle">Ready to start call</div>
+
+      <button id="startCall" class="call-btn">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        Start Call
+      </button>
+
+      <button id="endCall" class="call-btn">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        End Call
+      </button>
+
+      <div class="mic-hint">Make sure your microphone is enabled</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Live Transcript</div>
+      <div id="transcript">
+        <div class="transcript-placeholder">Conversation will appear here...</div>
+      </div>
+    </div>
+
+    <div class="test-phrases">
+      <h4>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        Try These Sample Questions
+      </h4>
+      <ul>
+        <li>"May available ba kayong Biogesic?"</li>
+        <li>"Ano po ang gamot for high blood?"</li>
+        <li>"How much is the delivery fee to Makati?"</li>
+        <li>"Pwede ba mag-order ng vitamins?"</li>
+        <li>"What time is your pharmacy open?"</li>
+      </ul>
     </div>
   </div>
 
-  <div class="card">
-    <div id="status" class="status idle">Ready to start</div>
-
-    <button id="startCall">Start Voice Test</button>
-    <button id="endCall">End Call</button>
-  </div>
-
-  <div class="card">
-    <label>Live Transcript</label>
-    <div id="transcript">
-      <em style="color: #999;">Transcript will appear here during the call...</em>
-    </div>
-  </div>
-
-  <div class="test-phrases">
-    <h4>Test Phrases (Taglish)</h4>
-    <ul>
-      <li>"Ano po yung available na gamot for cough?"</li>
-      <li>"May stock pa ba kayo ng Biogesic?"</li>
-      <li>"I want to order some vitamins, pwede po ba?"</li>
-      <li>"Magkano po ang delivery fee sa Makati?"</li>
-    </ul>
-  </div>
+  <footer class="footer">
+    Powered by AI &bull; <a href="https://www.cybermeds.ph" target="_blank">www.cybermeds.ph</a>
+  </footer>
 
   <!-- Retell Web SDK via ES module -->
   <script type="module">
@@ -178,7 +359,6 @@
     let retellWebClient = null;
     let isCallActive = false;
 
-    // Load available agents
     async function loadAgents() {
       try {
         const response = await fetch('/api/web-call/agents');
@@ -186,14 +366,14 @@
 
         if (data.success && data.agents.length > 0) {
           agentSelect.innerHTML = data.agents.map(agent =>
-            `<option value="${agent.agent_id}">${agent.agent_name || agent.agent_id}</option>`
+            `<option value="${agent.agent_id}">${agent.agent_name || 'Cybermeds Assistant'}</option>`
           ).join('');
         } else {
-          agentSelect.innerHTML = '<option value="">No agents found - create one in Retell Dashboard</option>';
+          agentSelect.innerHTML = '<option value="">No agents configured</option>';
         }
       } catch (error) {
         console.error('Failed to load agents:', error);
-        agentSelect.innerHTML = '<option value="">Error loading agents</option>';
+        agentSelect.innerHTML = '<option value="">Unable to load agents</option>';
       }
     }
 
@@ -202,18 +382,19 @@
       statusDiv.textContent = message;
     }
 
-    function addTranscript(role, text) {
-      const className = role === 'agent' ? 'agent-msg' : 'user-msg';
-      const prefix = role === 'agent' ? 'Agent: ' : 'You: ';
+    function clearTranscript() {
+      transcriptDiv.innerHTML = '<div class="transcript-placeholder">Conversation will appear here...</div>';
+    }
 
-      // Clear placeholder on first message
-      if (transcriptDiv.querySelector('em')) {
+    function addTranscript(role, text) {
+      const placeholder = transcriptDiv.querySelector('.transcript-placeholder');
+      if (placeholder) {
         transcriptDiv.innerHTML = '';
       }
 
       const msgDiv = document.createElement('div');
-      msgDiv.className = className;
-      msgDiv.textContent = prefix + text;
+      msgDiv.className = role === 'agent' ? 'agent-msg' : 'user-msg';
+      msgDiv.textContent = text;
       transcriptDiv.appendChild(msgDiv);
       transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
     }
@@ -221,16 +402,15 @@
     async function startCall() {
       const agentId = agentSelect.value;
       if (!agentId) {
-        alert('Please select an agent first');
+        alert('Please select a voice agent');
         return;
       }
 
       try {
         setStatus('connecting', 'Connecting...');
         startBtn.disabled = true;
-        transcriptDiv.innerHTML = '<em style="color: #999;">Connecting to voice agent...</em>';
+        transcriptDiv.innerHTML = '<div class="transcript-placeholder">Connecting to assistant...</div>';
 
-        // Get access token from our backend
         const response = await fetch('/api/web-call', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -240,41 +420,28 @@
         const data = await response.json();
 
         if (!data.success) {
-          throw new Error(data.message || 'Failed to create call');
+          throw new Error(data.message || 'Failed to connect');
         }
 
-        // Initialize Retell Web Client
         retellWebClient = new RetellWebClient();
 
-        // Set up event handlers
         retellWebClient.on('call_started', () => {
-          console.log('Call started');
-          setStatus('active', 'Call active - speak now!');
+          setStatus('active', 'Call active - speak now');
           startBtn.style.display = 'none';
-          endBtn.style.display = 'block';
+          endBtn.style.display = 'flex';
           isCallActive = true;
           transcriptDiv.innerHTML = '';
         });
 
         retellWebClient.on('call_ended', () => {
-          console.log('Call ended');
           setStatus('idle', 'Call ended');
-          startBtn.style.display = 'block';
+          startBtn.style.display = 'flex';
           startBtn.disabled = false;
           endBtn.style.display = 'none';
           isCallActive = false;
         });
 
-        retellWebClient.on('agent_start_talking', () => {
-          console.log('Agent speaking...');
-        });
-
-        retellWebClient.on('agent_stop_talking', () => {
-          console.log('Agent stopped speaking');
-        });
-
         retellWebClient.on('update', (update) => {
-          // Display transcript updates
           if (update.transcript) {
             transcriptDiv.innerHTML = '';
             update.transcript.forEach(entry => {
@@ -284,22 +451,21 @@
         });
 
         retellWebClient.on('error', (error) => {
-          console.error('Retell error:', error);
-          setStatus('error', `Error: ${error.message || 'Unknown error'}`);
-          startBtn.style.display = 'block';
+          console.error('Call error:', error);
+          setStatus('error', 'Connection error - please try again');
+          startBtn.style.display = 'flex';
           startBtn.disabled = false;
           endBtn.style.display = 'none';
           isCallActive = false;
         });
 
-        // Start the call with the access token
         await retellWebClient.startCall({
           accessToken: data.access_token
         });
 
       } catch (error) {
         console.error('Failed to start call:', error);
-        setStatus('error', `Failed: ${error.message}`);
+        setStatus('error', 'Failed to connect');
         startBtn.disabled = false;
       }
     }
@@ -310,11 +476,9 @@
       }
     }
 
-    // Event listeners
     startBtn.addEventListener('click', startCall);
     endBtn.addEventListener('click', endCall);
 
-    // Load agents on page load
     loadAgents();
   </script>
 </body>
