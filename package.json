@@ -1,0 +1,26 @@
+{
+  "name": "project-lapu-lapu",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-powered voice customer service system for Philippine pharmaceutical company",
+  "scripts": {
+    "dev": "pnpm --filter api dev",
+    "build": "pnpm --filter api build",
+    "start": "pnpm --filter api start",
+    "dev:dashboard": "pnpm --filter dashboard dev",
+    "build:all": "pnpm -r build"
+  },
+  "keywords": [
+    "voice-ai",
+    "customer-service",
+    "retell-ai",
+    "telnyx",
+    "pharmaceutical"
+  ],
+  "author": "",
+  "license": "PRIVATE",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
